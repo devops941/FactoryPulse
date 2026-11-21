@@ -101,7 +101,8 @@ async def commit_import_batch(
     )
 
 
-@router.get("/", response_model=list[ImportBatchResponse])
+@router.get("", response_model=list[ImportBatchResponse])
+@router.get("/", response_model=list[ImportBatchResponse], include_in_schema=False)
 async def list_import_batches(
     plant_id: str = None,
     limit: int = 20,
