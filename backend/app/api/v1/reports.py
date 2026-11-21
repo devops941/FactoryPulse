@@ -2,6 +2,7 @@
 
 import logging
 from datetime import datetime
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from app.services.auth_service import get_current_user
@@ -14,7 +15,8 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/reports", tags=["Reports"])
 
 
-@router.post("/", response_model=dict)
+@router.post("", response_model=dict)
+@router.post("/", response_model=dict, include_in_schema=False)
 async def create_report(
     request: ReportCreateRequest,
     current_user: dict = Depends(get_current_user),
@@ -76,9 +78,10 @@ async def create_report(
         raise HTTPException(status_code=500, detail="Report generation failed")
 
 
-@router.get("/", response_model=dict)
+@router.get("", response_model=dict)
+@router.get("/", response_model=dict, include_in_schema=False)
 async def list_reports(
-    plant_id: str = Query(...),
+    plant_id: Optional[str] = Query(None),
     limit: int = Query(50, ge=1, le=100),
     skip: int = Query(0, ge=0),
     current_user: dict = Depends(get_current_user),
@@ -89,11 +92,15 @@ async def list_reports(
     Returns paginated list of report metadata.
     """
     try:
+        query_filter = {}
+        if plant_id:
+            query_filter["plant_id"] = plant_id
+
         # Count total reports
-        total = await db.reports.count_documents({"plant_id": plant_id})
+        total = await db.reports.count_documents(query_filter)
 
         # Fetch paginated reports
-        cursor = db.reports.find({"plant_id": plant_id}).sort("created_at", -1).skip(skip).limit(limit)
+        cursor = db.reports.find(query_filter).sort("created_at", -1).skip(skip).limit(limit)
         reports = []
 
         async for report in cursor:

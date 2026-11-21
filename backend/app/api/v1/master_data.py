@@ -301,8 +301,9 @@ shifts_router = APIRouter(prefix="/shifts", tags=["Shifts"])
 
 
 @shifts_router.get("", response_model=list[ShiftResponse])
+@shifts_router.get("/", response_model=list[ShiftResponse], include_in_schema=False)
 async def list_shifts(
-    plant_id: str = Query(..., description="Plant ID"),
+    plant_id: Optional[str] = Query(None, description="Plant ID"),
     current_user: dict = Depends(get_current_user),
     db: AsyncIOMotorDatabase = Depends(get_database),
 ):
@@ -317,6 +318,8 @@ async def list_shifts(
     Returns:
         List of shifts for the plant
     """
+    if not plant_id:
+        return []
     shifts = await master_repository.list_shifts(db, plant_id)
     return shifts
 

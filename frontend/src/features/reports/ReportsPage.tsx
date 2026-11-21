@@ -48,7 +48,7 @@ export default function ReportsPage() {
     queryFn: async () => {
       if (!activePlantId) return { total: 0, reports: [] }
       try {
-        const response = await apiClient.get('/api/v1/reports/', {
+        const response = await apiClient.get('/reports', {
           params: { plant_id: activePlantId, limit: 20 },
         })
         return response.data
@@ -61,7 +61,7 @@ export default function ReportsPage() {
 
   const generateReportMutation = useMutation({
     mutationFn: async (request: ReportRequest) => {
-      const response = await apiClient.post('/api/v1/reports/', request, {
+      const response = await apiClient.post('/reports', request, {
         responseType: 'blob',
       })
       return response
@@ -101,7 +101,7 @@ export default function ReportsPage() {
 
   const handleDownloadReport = async (reportId: string) => {
     try {
-      const response = await apiClient.get(`/api/v1/reports/${reportId}/download`, {
+      const response = await apiClient.get(`/reports/${reportId}/download`, {
         responseType: 'blob',
       })
 
